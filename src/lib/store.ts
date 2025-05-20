@@ -12,7 +12,7 @@ interface AppState {
   followUpSuggestions: FollowUpSuggestion[];
   isLoading: boolean;
   error: string | null;
-  
+
   // Actions
   setApiKey: (apiKey: string) => void;
   selectAgent: (agentId: string) => void;
@@ -32,17 +32,17 @@ export const useAppStore = create<AppState>((set, get) => ({
   followUpSuggestions: [],
   isLoading: false,
   error: null,
-  
+
   setApiKey: (apiKey: string) => {
     // In a real app, we would validate the API key here
     localStorage.setItem('sambanova_api_key', apiKey);
     set({ apiKeyConfigured: true });
   },
-  
+
   selectAgent: (agentId: string) => {
     const agent = get().agents.find(a => a.id === agentId) || null;
     set({ selectedAgent: agent });
-    
+
     // Check if there's an existing conversation with this agent
     const existingConversation = get().conversations.find(c => c.agentId === agentId);
     if (existingConversation) {
@@ -52,7 +52,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       get().startConversation(agentId);
     }
   },
-  
+
   startConversation: (agentId: string) => {
     const newConversation: Conversation = {
       id: `conv-${Date.now()}`,
@@ -61,29 +61,29 @@ export const useAppStore = create<AppState>((set, get) => ({
       createdAt: new Date(),
       updatedAt: new Date()
     };
-    
+
     set(state => ({
       conversations: [...state.conversations, newConversation],
       currentConversation: newConversation,
       followUpSuggestions: []
     }));
   },
-  
+
   sendMessage: async (content: string) => {
     const { currentConversation, selectedAgent } = get();
-    
+
     if (!currentConversation || !selectedAgent) {
       set({ error: 'No active conversation or agent selected' });
       return;
     }
-    
+
     // Check content moderation
     const isAppropriate = await aiService.moderateContent(content);
     if (!isAppropriate) {
       set({ error: 'Content flagged as inappropriate' });
       return;
     }
-    
+
     // Add user message to conversation
     const userMessage: Message = {
       id: `msg-${Date.now()}`,
@@ -91,7 +91,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       content,
       timestamp: new Date()
     };
-    
+
     set(state => ({
       isLoading: true,
       error: null,
@@ -101,7 +101,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         updatedAt: new Date()
       }
     }));
-    
+
     try {
       // Get AI response
       const response = await aiService.chat(
@@ -109,43 +109,58 @@ export const useAppStore = create<AppState>((set, get) => ({
         content,
         get().currentConversation!.messages
       );
-      
+
       // Add AI response to conversation
       const aiMessage: Message = {
         id: `msg-${Date.now()}`,
         role: 'assistant',
-        content: response,
+        content: response || 'I apologize, but I was unable to generate a response at this time. Please try again later.',
         timestamp: new Date()
       };
-      
+
       set(state => ({
         currentConversation: {
           ...state.currentConversation!,
           messages: [...state.currentConversation!.messages, aiMessage],
           updatedAt: new Date()
         },
-        isLoading: false
+        isLoading: false,
+        error: null
       }));
-      
+
       // Generate follow-up suggestions
       get().generateFollowUps();
-      
-    } catch (error) {
+
+    } catch (error: any) {
       console.error('Error sending message:', error);
-      set({ 
+
+      // Add error message as AI response
+      const errorMessage: Message = {
+        id: `msg-${Date.now()}`,
+        role: 'assistant',
+        content: `I apologize, but I encountered an error: ${error.message || 'Unknown error'}. Please try again later.`,
+        timestamp: new Date()
+      };
+
+      set(state => ({
         isLoading: false,
-        error: 'Failed to get response from AI service'
-      });
+        error: 'Failed to get response from AI service',
+        currentConversation: {
+          ...state.currentConversation!,
+          messages: [...state.currentConversation!.messages, errorMessage],
+          updatedAt: new Date()
+        }
+      }));
     }
   },
-  
+
   updateAgentSettings: (agentId: string, updates: Partial<Agent>) => {
     set(state => ({
-      agents: state.agents.map(agent => 
+      agents: state.agents.map(agent =>
         agent.id === agentId ? { ...agent, ...updates } : agent
       )
     }));
-    
+
     // If the updated agent is the selected one, update that too
     const { selectedAgent } = get();
     if (selectedAgent && selectedAgent.id === agentId) {
@@ -154,37 +169,37 @@ export const useAppStore = create<AppState>((set, get) => ({
       }));
     }
   },
-  
+
   clearConversation: () => {
     const { currentConversation } = get();
     if (!currentConversation) return;
-    
+
     set(state => ({
       conversations: state.conversations.filter(c => c.id !== currentConversation.id),
       currentConversation: null,
       followUpSuggestions: []
     }));
   },
-  
+
   generateFollowUps: async () => {
     const { currentConversation, selectedAgent } = get();
-    
+
     if (!currentConversation || !selectedAgent || currentConversation.messages.length < 2) {
       return;
     }
-    
+
     try {
       const suggestions = await aiService.generateFollowUpSuggestions(
         selectedAgent,
         currentConversation.messages
       );
-      
+
       const followUps: FollowUpSuggestion[] = suggestions.map((text, index) => ({
         id: `followup-${Date.now()}-${index}`,
         text,
         conversationId: currentConversation.id
       }));
-      
+
       set({ followUpSuggestions: followUps });
     } catch (error) {
       console.error('Error generating follow-up suggestions:', error);

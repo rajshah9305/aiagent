@@ -20,8 +20,9 @@ export class SambanovaAI {
         throw new Error('SambaNova API key is not configured');
       }
 
+      // Use our server-side API route instead of calling SambaNova directly
       const response = await axios.post(
-        `${this.apiUrl}/chat/completions`,
+        '/api/chat',
         {
           model: modelConfig.model,
           messages: [
@@ -33,12 +34,6 @@ export class SambanovaAI {
           ],
           temperature: modelConfig.temperature,
           max_tokens: modelConfig.maxTokens || 1024,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.apiKey}`
-          }
         }
       );
 
