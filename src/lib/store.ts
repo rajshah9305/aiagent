@@ -1,7 +1,8 @@
 import { create } from 'zustand';
-import { Agent, Conversation, Message, FollowUpSuggestion } from '@/types';
+import { Agent, Conversation, Message, FollowUpSuggestion, MessageContent } from '@/types';
 import { agents } from '@/lib/agents';
 import { aiService } from '@/lib/ai-service';
+import { v4 as uuidv4 } from 'uuid';
 
 interface AppState {
   agents: Agent[];
@@ -18,10 +19,12 @@ interface AppState {
   setApiKey: (apiKey: string) => void;
   selectAgent: (agentId: string) => void;
   startConversation: (agentId: string) => void;
-  sendMessage: (content: string) => Promise<void>;
+  sendMessage: (content: string | MessageContent[]) => Promise<void>;
+  sendImageMessage: (text: string, imageUrl: string) => Promise<void>;
   updateAgentSettings: (agentId: string, updates: Partial<Agent>) => void;
   clearConversation: () => void;
   generateFollowUps: () => Promise<void>;
+  clearError: () => void;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -36,18 +39,35 @@ export const useAppStore = create<AppState>((set, get) => ({
   usingMockApi: true, // Default to using mock API until real API is working
 
   setApiKey: (apiKey: string) => {
-    // In a real app, we would validate the API key here
-    localStorage.setItem('sambanova_api_key', apiKey);
-    aiService.sambanovaClient.setApiKey(apiKey);
-    set({
-      apiKeyConfigured: true,
-      usingMockApi: false // Attempt to use real API when key is set
-    });
+    try {
+      // Store the API key in localStorage
+      localStorage.setItem('sambanova_api_key', apiKey);
+
+      // Set the API key in the SambaNova client
+      aiService.sambanovaClient.setApiKey(apiKey);
+
+      // Update the state
+      set({
+        apiKeyConfigured: true,
+        usingMockApi: false, // Attempt to use real API when key is set
+        error: null
+      });
+
+      console.log('API key configured successfully');
+    } catch (error) {
+      console.error('Error setting API key:', error);
+      set({
+        error: 'Failed to configure API key. Please try again.'
+      });
+    }
   },
 
   selectAgent: (agentId: string) => {
     const agent = get().agents.find(a => a.id === agentId) || null;
-    set({ selectedAgent: agent });
+    set({
+      selectedAgent: agent,
+      error: null
+    });
 
     // Check if there's an existing conversation with this agent
     const existingConversation = get().conversations.find(c => c.agentId === agentId);
@@ -61,7 +81,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   startConversation: (agentId: string) => {
     const newConversation: Conversation = {
-      id: `conv-${Date.now()}`,
+      id: `conv-${uuidv4()}`,
       agentId,
       messages: [],
       createdAt: new Date(),
@@ -71,11 +91,12 @@ export const useAppStore = create<AppState>((set, get) => ({
     set(state => ({
       conversations: [...state.conversations, newConversation],
       currentConversation: newConversation,
-      followUpSuggestions: []
+      followUpSuggestions: [],
+      error: null
     }));
   },
 
-  sendMessage: async (content: string) => {
+  sendMessage: async (content: string | MessageContent[]) => {
     const { currentConversation, selectedAgent } = get();
 
     if (!currentConversation || !selectedAgent) {
@@ -92,7 +113,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     // Add user message to conversation
     const userMessage: Message = {
-      id: `msg-${Date.now()}`,
+      id: `msg-${uuidv4()}`,
       role: 'user',
       content,
       timestamp: new Date()
@@ -121,7 +142,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
       // Add AI response to conversation
       const aiMessage: Message = {
-        id: `msg-${Date.now()}`,
+        id: `msg-${uuidv4()}`,
         role: 'assistant',
         content: response || 'I apologize, but I was unable to generate a response at this time. Please try again later.',
         timestamp: new Date()
@@ -146,7 +167,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
       // Add error message as AI response
       const errorMessage: Message = {
-        id: `msg-${Date.now()}`,
+        id: `msg-${uuidv4()}`,
         role: 'assistant',
         content: `I apologize, but I encountered an error: ${error.message || 'Unknown error'}. Please try again later.`,
         timestamp: new Date()
@@ -164,11 +185,27 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
+  sendImageMessage: async (text: string, imageUrl: string) => {
+    try {
+      // Create a multimodal message with text and image
+      const multimodalContent = await aiService.createImageMessage(text, imageUrl);
+
+      // Send the message using the standard sendMessage function
+      await get().sendMessage(multimodalContent);
+    } catch (error: any) {
+      console.error('Error sending image message:', error);
+      set({
+        error: `Failed to send image: ${error.message || 'Unknown error'}`
+      });
+    }
+  },
+
   updateAgentSettings: (agentId: string, updates: Partial<Agent>) => {
     set(state => ({
       agents: state.agents.map(agent =>
         agent.id === agentId ? { ...agent, ...updates } : agent
-      )
+      ),
+      error: null
     }));
 
     // If the updated agent is the selected one, update that too
@@ -187,7 +224,8 @@ export const useAppStore = create<AppState>((set, get) => ({
     set(state => ({
       conversations: state.conversations.filter(c => c.id !== currentConversation.id),
       currentConversation: null,
-      followUpSuggestions: []
+      followUpSuggestions: [],
+      error: null
     }));
   },
 
@@ -205,7 +243,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       );
 
       const followUps: FollowUpSuggestion[] = suggestions.map((text, index) => ({
-        id: `followup-${Date.now()}-${index}`,
+        id: `followup-${uuidv4()}-${index}`,
         text,
         conversationId: currentConversation.id
       }));
@@ -214,5 +252,9 @@ export const useAppStore = create<AppState>((set, get) => ({
     } catch (error) {
       console.error('Error generating follow-up suggestions:', error);
     }
+  },
+
+  clearError: () => {
+    set({ error: null });
   }
 }));

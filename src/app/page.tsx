@@ -16,14 +16,24 @@ export default function Home() {
     isLoading,
     apiKeyConfigured,
     usingMockApi,
+    error,
     selectAgent,
     sendMessage,
+    sendImageMessage,
     updateAgentSettings,
-    setApiKey
+    setApiKey,
+    clearError
   } = useAppStore();
 
   const [showSettings, setShowSettings] = React.useState(false);
   const [apiKey, setApiKeyInput] = React.useState('');
+
+  // Add effect to handle errors
+  React.useEffect(() => {
+    if (error) {
+      handleError();
+    }
+  }, [error]);
 
   const handleAgentSelect = (agentId: string) => {
     selectAgent(agentId);
@@ -34,8 +44,18 @@ export default function Home() {
     sendMessage(content);
   };
 
+  const handleSendImageMessage = (text: string, imageUrl: string) => {
+    sendImageMessage(text, imageUrl);
+  };
+
   const handleSuggestionClick = (suggestion: string) => {
     sendMessage(suggestion);
+  };
+
+  const handleError = () => {
+    if (error) {
+      setTimeout(() => clearError(), 5000); // Clear error after 5 seconds
+    }
   };
 
   const handleSaveSettings = (updatedAgent: any) => {
@@ -152,9 +172,15 @@ export default function Home() {
                     </motion.button>
                   </div>
 
+                  {error && (
+                    <div className="mb-4 p-3 bg-red-900/50 text-red-200 rounded-lg text-sm">
+                      {error}
+                    </div>
+                  )}
                   <ChatInterface
                     messages={currentConversation?.messages || []}
                     onSendMessage={handleSendMessage}
+                    onSendImageMessage={handleSendImageMessage}
                     isLoading={isLoading}
                     followUpSuggestions={followUpSuggestions.map(s => s.text)}
                     onSuggestionClick={handleSuggestionClick}

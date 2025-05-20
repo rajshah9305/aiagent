@@ -1,27 +1,62 @@
 # AI Agents Web Application
 
-A production-ready, open-source web application featuring a suite of AI agents inspired by iconic Hollywood/TV characters. Built with Next.js, React, Tailwind CSS, and Framer Motion, with SambaNova AI Cloud Services integration.
+A production-ready, open-source web application featuring a suite of AI agents inspired by iconic Hollywood/TV characters. This platform provides a modern and professional user experience for interacting with AI assistants.
 
 ## Features
 
-- **AI Agent Integration**: Utilizes LangChain, CrewAI, and CopilotKit with SambaNova AI Cloud Services
-- **Conversation Management**: Natural and fluid conversation interface with memory and context handling
-- **Agent Management**: Create, configure, and manage individual agents with customizable parameters
-- **Knowledge & Search**: Integrated knowledge base and web search capabilities
-- **Follow-up Suggestions**: Generates relevant follow-up questions to guide user interaction
-- **NSFW Handling**: Appropriate mechanisms for handling or restricting NSFW content
-- **Agent Collaboration**: Agent-to-agent collaboration workflows
-- **Administrative Dashboard**: System management and monitoring
-- **User Feedback**: Mechanisms for continuous improvement
-- **API Exposure**: External integration capabilities
+### Core Functionality
 
-## Pre-configured Agents
+- **AI Agent Integration**: Utilizes LangChain, CrewAI, and CopilotKit to implement AI agent functionalities. Integrates with SambaNova AI Cloud Services for model hosting and inference.
+- **Frontend Framework**: Built with Next.js, React, Tailwind CSS, and Framer Motion for a sleek and responsive user interface.
+- **Agent Management**: Create, configure, and manage individual agents with configurable parameters including:
+  - AI model selection (from SambaNova AI Cloud Services)
+  - Temperature
+  - Available tools
+  - Knowledge sources
+  - Memory management
+  - Web access control
+- **Conversation Management**: Natural and fluid conversation interface with robust memory and context handling.
+- **Knowledge & Search**: Integrated knowledge base and web search capabilities for agents to access information.
+- **Follow-up Suggestions**: Generates relevant follow-up questions to guide user interaction.
+- **NSFW Handling**: Implements appropriate mechanisms for handling or restricting NSFW content.
+- **User Interface**: Visually appealing and responsive dashboard featuring animated agent cards.
+- **Multimodal Capabilities**: Support for both text and image inputs, allowing for richer interactions.
 
-- **Better Call Saul (Legal Strategist)**: Provides legal advice, drafts contracts and disclaimers
-- **SheldonGPT (Research Assistant)**: Conducts academic, technical, and scientific research
-- **Wolf of Wall Street (Sales Assistant)**: Generates sales email scripts and persuasive pitches
-- **Jarvis (Admin / Personal Assistant)**: Manages tasks, reminders, and calendar entries
-- **Q (Prompt Optimizer & Data Analyst)**: Creates advanced prompts and analyzes user data
+### Template AI Agents
+
+The application comes with pre-configured agents inspired by iconic characters:
+
+1. **Better Call Saul (Legal Strategist)**
+   - TV Reference: Saul Goodman (Breaking Bad)
+   - Function: Provides legal advice, drafts contracts and disclaimers, and assists with regulatory compliance.
+   - Tagline: "Subpoenas faster than you can blink."
+
+2. **SheldonGPT (Research Assistant)**
+   - TV Reference: Sheldon Cooper (The Big Bang Theory)
+   - Function: Conducts academic, technical, and scientific research, providing citations where applicable.
+   - Tagline: "Smarter than you. And will remind you."
+
+3. **Wolf of Wall Street (Sales Assistant)**
+   - Movie Reference: Jordan Belfort (Wolf of Wall Street)
+   - Function: Generates sales email scripts, persuasive pitches, and growth hacking strategies.
+   - Tagline: "Sell anything. Charm everyone."
+
+4. **Jarvis (Admin / Personal Assistant)**
+   - Movie Reference: Iron Man's AI
+   - Function: Manages tasks, sets reminders, handles calendar entries, and provides user notifications.
+   - Tagline: "Always at your service — efficient, sharp, and dependable."
+
+5. **Q (Prompt Optimizer & Data Analyst)**
+   - Movie Reference: Q (James Bond)
+   - Function: Creates advanced prompts, analyzes user data, and assists in workflow automation design.
+   - Tagline: "Gadget your AI with perfect prompts."
+
+### Advanced Features
+
+- **Agent-to-agent collaboration workflows**
+- **Administrative dashboard for system management**
+- **User feedback mechanisms for continuous improvement**
+- **API exposure for potential external integrations**
 
 ## Getting Started
 
@@ -34,30 +69,35 @@ A production-ready, open-source web application featuring a suite of AI agents i
 ### Installation
 
 1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/ai-agents-app.git
-cd ai-agents-app
-```
+
+   ```bash
+   git clone https://github.com/rajshah9305/aiagent.git
+   cd aiagent
+   ```
 
 2. Install dependencies:
-```bash
-npm install --legacy-peer-deps
-# or
-yarn install --legacy-peer-deps
-```
+
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
 
 3. Create a `.env.local` file in the root directory and add your SambaNova API key:
-```
-NEXT_PUBLIC_SAMBANOVA_API_KEY=your_api_key_here
-SAMBANOVA_API_URL=https://api.sambanova.ai/v1
-```
+
+   ```env
+   NEXT_PUBLIC_SAMBANOVA_API_KEY=your_api_key_here
+   SAMBANOVA_API_KEY=your_api_key_here
+   SAMBANOVA_API_URL=https://api.sambanova.ai/v1
+   ```
 
 4. Start the development server:
-```bash
-npm run dev
-# or
-yarn dev
-```
+
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
 
 5. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
 
@@ -88,36 +128,36 @@ This application is ready for deployment on Vercel:
 
 ## Project Structure
 
-```
-ai-agents-app/
+```text
+aiagent/
 ├── public/
 │   └── images/
 │       └── agents/
 ├── src/
 │   ├── app/
 │   │   ├── api/
+│   │   │   ├── chat/
+│   │   │   └── mock-chat/
 │   │   └── page.tsx
 │   ├── components/
 │   │   ├── AdminDashboard.tsx
 │   │   ├── AgentCard.tsx
 │   │   ├── AgentCollaboration.tsx
 │   │   ├── AgentSettings.tsx
-│   │   ├── ApiDocs.tsx
 │   │   ├── ChatInterface.tsx
-│   │   ├── KnowledgeBase.tsx
-│   │   ├── NSFWHandling.tsx
-│   │   └── UserFeedback.tsx
-│   ├── hooks/
+│   │   └── KnowledgeBase.tsx
 │   ├── lib/
 │   │   ├── agents.ts
 │   │   ├── ai-integration.ts
 │   │   ├── ai-service.ts
 │   │   ├── sambanova.ts
 │   │   └── store.ts
-│   ├── types/
-│   │   └── index.ts
-│   └── utils/
-└── package.json
+│   └── types/
+│       └── index.ts
+├── scripts/
+│   └── generate-placeholders.js
+├── package.json
+└── README.md
 ```
 
 ## Technologies Used
