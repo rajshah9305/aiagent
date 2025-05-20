@@ -10,7 +10,7 @@ export const agents: Agent[] = [
     avatar: '/images/agents/saul.png',
     tvReference: 'Saul Goodman (Breaking Bad)',
     modelConfig: {
-      model: 'sambanova/llama-3-70b',
+      model: 'Llama-4-Maverick-17B-128E-Instruct',
       temperature: 0.7,
     },
     tools: [
@@ -39,7 +39,7 @@ export const agents: Agent[] = [
     avatar: '/images/agents/sheldon.png',
     tvReference: 'Sheldon Cooper (The Big Bang Theory)',
     modelConfig: {
-      model: 'sambanova/llama-3-70b',
+      model: 'Llama-4-Maverick-17B-128E-Instruct',
       temperature: 0.2,
     },
     tools: [
@@ -68,7 +68,7 @@ export const agents: Agent[] = [
     avatar: '/images/agents/wolf.png',
     tvReference: 'Jordan Belfort (Wolf of Wall Street)',
     modelConfig: {
-      model: 'sambanova/llama-3-70b',
+      model: 'Llama-4-Maverick-17B-128E-Instruct',
       temperature: 0.8,
     },
     tools: [
@@ -97,7 +97,7 @@ export const agents: Agent[] = [
     avatar: '/images/agents/jarvis.png',
     tvReference: 'Iron Man\'s AI',
     modelConfig: {
-      model: 'sambanova/llama-3-70b',
+      model: 'Llama-4-Maverick-17B-128E-Instruct',
       temperature: 0.5,
     },
     tools: [
@@ -126,7 +126,7 @@ export const agents: Agent[] = [
     avatar: '/images/agents/q.png',
     tvReference: 'Q (James Bond)',
     modelConfig: {
-      model: 'sambanova/llama-3-70b',
+      model: 'Llama-4-Maverick-17B-128E-Instruct',
       temperature: 0.6,
     },
     tools: [

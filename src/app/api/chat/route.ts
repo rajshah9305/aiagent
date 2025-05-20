@@ -8,9 +8,8 @@ export async function POST(request: NextRequest) {
 
     // In server components/API routes, we should use process.env directly (not NEXT_PUBLIC_*)
     const apiKey = process.env.SAMBANOVA_API_KEY || process.env.NEXT_PUBLIC_SAMBANOVA_API_KEY;
-    // The correct SambaNova API URL should be something like 'https://api.sambanova.net/api/v1'
-    // Let's try different possible URLs
-    const apiUrl = process.env.SAMBANOVA_API_URL || 'https://api.sambanova.net/api/v1';
+    // Based on the reference code, the correct URL is 'https://api.sambanova.ai/v1'
+    const apiUrl = process.env.SAMBANOVA_API_URL || 'https://api.sambanova.ai/v1';
 
     console.log('API URL:', apiUrl);
     console.log('API Key configured:', !!apiKey);
@@ -51,15 +50,19 @@ export async function POST(request: NextRequest) {
     });
     */
 
-    // Make the actual API call - try different endpoint paths
+    // Make the API call based on the reference code format
     console.log('Attempting API call to:', `${apiUrl}/chat/completions`);
     try {
+      // Based on the reference code, we should use model "Llama-4-Maverick-17B-128E-Instruct" if none specified
+      const modelToUse = model || "Llama-4-Maverick-17B-128E-Instruct";
+
       const response = await axios.post(
         `${apiUrl}/chat/completions`,
         {
-          model,
+          model: modelToUse,
           messages,
-          temperature,
+          temperature: temperature || 0.1,
+          top_p: 0.1,
           max_tokens: max_tokens || 1024,
         },
         {
@@ -73,25 +76,28 @@ export async function POST(request: NextRequest) {
       console.log('API response status:', response.status);
       return NextResponse.json(response.data);
     } catch (error: any) {
-      console.error('Error with first endpoint attempt:', error.message);
+      console.error('Error with API call:', error.message);
 
-      // Try alternative endpoint
-      console.log('Attempting alternative endpoint:', `${apiUrl}/completions`);
-      const response = await axios.post(
-        `${apiUrl}/completions`,
-        {
-          model,
-          messages,
-          temperature,
-          max_tokens: max_tokens || 1024,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-          }
-        }
-      );
+      // If the error is related to the model, try with a different model
+      if (error.message.includes('model') || error.response?.data?.error?.includes('model')) {
+        console.log('Attempting with alternative model');
+        try {
+          const response = await axios.post(
+            `${apiUrl}/chat/completions`,
+            {
+              model: "Llama-4-Maverick-17B-128E-Instruct", // Try with this specific model
+              messages,
+              temperature: temperature || 0.1,
+              top_p: 0.1,
+              max_tokens: max_tokens || 1024,
+            },
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+              }
+            }
+          );
 
     console.log('API response status:', response.status);
 

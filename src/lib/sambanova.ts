@@ -8,7 +8,7 @@ export class SambanovaAI {
 
   constructor() {
     this.apiKey = process.env.NEXT_PUBLIC_SAMBANOVA_API_KEY;
-    this.apiUrl = process.env.SAMBANOVA_API_URL || 'https://api.sambanova.net/api/v1';
+    this.apiUrl = process.env.SAMBANOVA_API_URL || 'https://api.sambanova.ai/v1';
     this.useMockApi = true; // Default to using the mock API until we get the real API working
   }
 
