@@ -2,7 +2,7 @@ import { SambanovaAI } from './sambanova';
 import { Agent } from '@/types';
 
 export class AIService {
-  private sambanovaClient: SambanovaAI;
+  sambanovaClient: SambanovaAI;
 
   constructor() {
     this.sambanovaClient = new SambanovaAI();
@@ -25,14 +25,17 @@ export class AIService {
         content: message
       });
 
-      console.log('Formatted history:', JSON.stringify(formattedHistory));
+      console.log('Formatted history length:', formattedHistory.length);
 
       // Create system message based on agent's role and characteristics
       const systemMessage = this.createSystemPrompt(agent);
       console.log('System prompt created');
 
-      // Call the SambaNova API
-      console.log('Calling SambaNova API with model:', agent.modelConfig.model);
+      // Force mock API for testing if needed
+      // this.sambanovaClient.useMock(true);
+
+      // Call the SambaNova API with fallback to mock API
+      console.log('Calling AI API with model:', agent.modelConfig.model);
       const response = await this.sambanovaClient.generateResponse(
         systemMessage,
         formattedHistory,

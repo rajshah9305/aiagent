@@ -12,6 +12,7 @@ interface AppState {
   followUpSuggestions: FollowUpSuggestion[];
   isLoading: boolean;
   error: string | null;
+  usingMockApi: boolean;
 
   // Actions
   setApiKey: (apiKey: string) => void;
@@ -32,11 +33,16 @@ export const useAppStore = create<AppState>((set, get) => ({
   followUpSuggestions: [],
   isLoading: false,
   error: null,
+  usingMockApi: true, // Default to using mock API until real API is working
 
   setApiKey: (apiKey: string) => {
     // In a real app, we would validate the API key here
     localStorage.setItem('sambanova_api_key', apiKey);
-    set({ apiKeyConfigured: true });
+    aiService.sambanovaClient.setApiKey(apiKey);
+    set({
+      apiKeyConfigured: true,
+      usingMockApi: false // Attempt to use real API when key is set
+    });
   },
 
   selectAgent: (agentId: string) => {
@@ -110,6 +116,9 @@ export const useAppStore = create<AppState>((set, get) => ({
         get().currentConversation!.messages
       );
 
+      // Check if we're using the mock API
+      const usingMock = aiService.sambanovaClient.isUsingMockApi();
+
       // Add AI response to conversation
       const aiMessage: Message = {
         id: `msg-${Date.now()}`,
@@ -125,7 +134,8 @@ export const useAppStore = create<AppState>((set, get) => ({
           updatedAt: new Date()
         },
         isLoading: false,
-        error: null
+        error: null,
+        usingMockApi: usingMock
       }));
 
       // Generate follow-up suggestions

@@ -15,6 +15,7 @@ export default function Home() {
     followUpSuggestions,
     isLoading,
     apiKeyConfigured,
+    usingMockApi,
     selectAgent,
     sendMessage,
     updateAgentSettings,
@@ -129,7 +130,14 @@ export default function Home() {
                 >
                   <div className="flex justify-between items-center mb-4">
                     <div>
-                      <h2 className="text-xl font-semibold">{selectedAgent.name}</h2>
+                      <h2 className="text-xl font-semibold">
+                        {selectedAgent.name}
+                        {usingMockApi && (
+                          <span className="ml-2 px-2 py-1 text-xs bg-yellow-800 text-yellow-300 rounded-full">
+                            MOCK MODE
+                          </span>
+                        )}
+                      </h2>
                       <p className="text-gray-400 text-sm">{selectedAgent.role}</p>
                     </div>
                     <motion.button
